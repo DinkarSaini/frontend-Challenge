@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faTrash ,faCircleChevronRight,faAnglesRight,faCircleChevronLeft,faAnglesLeft} from '@fortawesome/free-solid-svg-icons';
+import { faPenToSquare, faTrash, faCircleChevronRight, faAnglesRight, faCircleChevronLeft, faAnglesLeft } from '@fortawesome/free-solid-svg-icons';
 import './App.css';
 
 function capitalizeFirstLetter(str) {
@@ -37,7 +37,6 @@ function App() {
   useEffect(() => {
     dataAdmin();
   }, []);
-
 
   useEffect(() => {
     const filteredResults = adminData.filter(
@@ -86,10 +85,44 @@ function App() {
 
   const toggleSelectAll = () => {
     setSelectAll((prevSelectAll) => !prevSelectAll);
-    setSelectedRows(prevSelectedRows =>
+    setSelectedRows((prevSelectedRows) =>
       selectAll
-        ? [] // If selectAll is true, deselect all rows
-        : currentRows.map(admin => admin.id) // If selectAll is false, select all current displayed rows
+        ? []
+        : currentRows.map((admin) => admin.id)
+    );
+  };
+
+  // ... Rest of the code
+
+  const renderPageNumbers = () => {
+    const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+    return (
+      <div className="pagination">
+        <Button variant="light" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
+          <FontAwesomeIcon icon={faAnglesLeft} />
+        </Button>
+        <Button variant="light" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+          <FontAwesomeIcon icon={faCircleChevronLeft} />
+        </Button>
+        {pageNumbers.map((pageNumber) => (
+          <Button
+            key={pageNumber}
+            variant="light"
+            onClick={() => handlePageChange(pageNumber)}
+            disabled={currentPage === pageNumber}
+            active={currentPage === pageNumber}
+          >
+            {pageNumber}
+          </Button>
+        ))}
+        <Button variant="light" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+          <FontAwesomeIcon icon={faCircleChevronRight} />
+        </Button>
+        <Button variant="light" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
+          <FontAwesomeIcon icon={faAnglesRight} />
+        </Button>
+      </div>
     );
   };
 
@@ -109,7 +142,7 @@ function App() {
         <Table className="mt-3">
           <thead>
             <tr>
-            <th>
+              <th>
                 <Form.Check
                   type="checkbox"
                   onChange={toggleSelectAll}
@@ -144,27 +177,13 @@ function App() {
           </tbody>
         </Table>
         <div className='delete'>
-          <div >
+          <div>
             <Button variant="danger" onClick={deleteSelectedRows} disabled={selectedRows.length === 0}>
               Delete Selected
-        </Button>
+            </Button>
           </div>
-        <div className="pagination">
-        
-          <Button variant="light" onClick={(e) => handlePageChange(1)} disabled={currentPage === 1}>
-          <FontAwesomeIcon icon={faAnglesLeft} />
-          </Button>
-          <Button variant="light" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
-          <FontAwesomeIcon icon={faCircleChevronLeft} />
-          </Button>
-          <Button variant="light" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
-          <FontAwesomeIcon icon={faCircleChevronRight} />
-          </Button>
-          <Button variant="light" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
-          <FontAwesomeIcon icon={faAnglesRight} />
-          </Button>
+          {renderPageNumbers()}
         </div>
-      </div>
       </Container>
     </div>
   );
