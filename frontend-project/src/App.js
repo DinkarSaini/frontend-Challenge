@@ -26,7 +26,7 @@ function App() {
   const formatRole = (role) => {
     return capitalizeFirstLetter(role);
   }
-
+  
   const dataAdmin = async () => {
     const res = await fetch('https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json');
     const data = await res.json();
@@ -48,7 +48,7 @@ function App() {
     setFilteredData(filteredResults);
   }, [searchTerm, adminData]);
 
-  // Pagination logic
+
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
@@ -58,7 +58,7 @@ function App() {
     setCurrentPage(pageNumber);
   };
 
-  // Handle row selection
+
   const toggleRowSelection = (id) => {
     setSelectedRows((prevSelectedRows) =>
       prevSelectedRows.includes(id)
@@ -69,7 +69,7 @@ function App() {
 
   const handleEdit = (row) => {
     setIsEditing(true);
-    setEditedRow(row);
+    setEditedRow({ ...row });
   };
 
   const deleteRow = (id) => {
@@ -77,7 +77,18 @@ function App() {
     setSelectedRows((prevSelectedRows) => prevSelectedRows.filter((rowId) => rowId !== id));
   };
 
-  // Delete selected rows
+  const saveEdit = (id) => {
+    setAdminData((prevData) =>
+      prevData.map((admin) => (admin.id === id ? { ...editedRow } : admin))
+    );
+    setIsEditing(false);
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  
   const deleteSelectedRows = () => {
     setAdminData((prevData) => prevData.filter((admin) => !selectedRows.includes(admin.id)));
     setSelectedRows([]);
@@ -85,14 +96,12 @@ function App() {
 
   const toggleSelectAll = () => {
     setSelectAll((prevSelectAll) => !prevSelectAll);
-    setSelectedRows((prevSelectedRows) =>
+    setSelectedRows(() =>
       selectAll
         ? []
         : currentRows.map((admin) => admin.id)
     );
   };
-
-  // ... Rest of the code
 
   const renderPageNumbers = () => {
     const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -128,7 +137,6 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Admin UI</h1>
       <Container>
         <form>
           <InputGroup className="my-5">
@@ -157,7 +165,10 @@ function App() {
           </thead>
           <tbody>
             {currentRows.map((admin) => (
-              <tr key={admin.id} className={selectedRows.includes(admin.id) ? 'selected' : ''}>
+              <tr key={admin.id} 
+              style={{ backgroundColor: selectedRows.includes(admin.id) ? '#f1f' : 'inherit' }}
+                onClick={() => toggleRowSelection(admin.id)}
+              >
                 <td>
                   <Form.Check
                     type="checkbox"
@@ -165,12 +176,44 @@ function App() {
                     checked={selectedRows.includes(admin.id)}
                   />
                 </td>
-                <td>{admin.name}</td>
-                <td>{admin.email}</td>
+                <td>
+                  {isEditing && editedRow.id === admin.id ? (
+                    <Form.Control
+                      type="text"
+                      value={editedRow.name}
+                      onChange={(e) => setEditedRow({ ...editedRow, name: e.target.value })}
+                    />
+                  ) : (
+                    admin.name
+                  )}
+                </td>
+                <td>
+                  {isEditing && editedRow.id === admin.id ? (
+                    <Form.Control
+                      type="text"
+                      value={editedRow.email}
+                      onChange={(e) => setEditedRow({ ...editedRow, email: e.target.value })}
+                    />
+                  ) : (
+                    admin.email
+                  )}
+                </td>
                 <td>{formatRole(admin.role)}</td>
                 <td>
-                  <button onClick={() => handleEdit(admin)} > <FontAwesomeIcon icon={faPenToSquare} /></button>{' '}
-                  <button onClick={() => deleteRow(admin.id)}> <FontAwesomeIcon icon={faTrash} /></button>
+                  {isEditing && editedRow.id === admin.id ? (
+                    <>
+                      <button onClick={() => saveEdit(admin.id)}>Save</button>{' '}
+                      <button onClick={cancelEdit}>Cancel</button>
+                    </>
+                  ) : (
+                    <button onClick={() => handleEdit(admin)}>
+                      <FontAwesomeIcon icon={faPenToSquare} />
+                    </button>
+                  )}
+                  {' '}
+                  <button onClick={() => deleteRow(admin.id)}>
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
                 </td>
               </tr>
             ))}
